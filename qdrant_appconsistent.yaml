@@ -2,24 +2,20 @@ apiVersion: cr.kanister.io/v1alpha1
 kind: Blueprint
 metadata:
   name: qdrant-hooks
+  namespace: kasten-io
 actions:
   backupPrehook:
     phases:
-    - func: KubeExec
+    - func: KubeTask
       name: lockQdrant
       args:
         namespace: "{{ .StatefulSet.Namespace }}"
-        pod: "{{ index .StatefulSet.Pods 0 }}"
-        container: qdrant
+        image: curlimages/curl
         command:
-        - bash
-        - -o
-        - errexit
-        - -o
-        - pipefail
+        - sh
         - -c
         - |
-          curl --location 'http://localhost:6333/locks' \
+          curl --location 'http://qdrant:6333/locks' \
           --header 'Content-Type: application/json' \
           --data '{
               "error_message": "write is temporarily disabled while a Kasten backup is performed",
@@ -27,21 +23,16 @@ actions:
           }'
   backupPosthook:
     phases:
-    - func: KubeExec
+    - func: KubeTask
       name: unlockQdrant
       args:
         namespace: "{{ .StatefulSet.Namespace }}"
-        pod: "{{ index .StatefulSet.Pods 0 }}"
-        container: qdrant
+        image: curlimages/curl
         command:
-        - bash
-        - -o
-        - errexit
-        - -o
-        - pipefail
+        - sh
         - -c
         - |
-          curl --location 'http://localhost:6333/locks' \
+          curl --location 'http://qdrant:6333/locks' \
           --header 'Content-Type: application/json' \
           --data '{
               "write": false
