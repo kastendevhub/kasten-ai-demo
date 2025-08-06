@@ -4,7 +4,7 @@ from qdrant_client.http.models import VectorParams, Distance, PointStruct
 import numpy as np
 
 # Connect to the Qdrant database
-client = QdrantClient(host="172.19.109.247", port=6333)
+client = QdrantClient(host="localhost", port=6333)
 
 # Define the collection name
 collection_name = "animal_collection"
