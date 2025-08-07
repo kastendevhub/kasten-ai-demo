@@ -19,7 +19,7 @@ spec:
         - name: k10-ecr
       containers:
       - name: animal-chat-app
-        image: gcr.io/rich-access-174020/qdrant-demo:latest
+        image: ghcr.io/kastendevhub/animal-chat:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000

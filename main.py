@@ -45,6 +45,7 @@ class AnimalQueryHandler:
         
         # Query patterns and their corresponding handlers
         patterns = [
+            (r'delete.*all.*animals|drop.*database|delete.*collection|clear.*database', 'delete_collection'),
             (r'wild|untamed|feral', 'wild_animals'),
             (r'tame|domestic|domesticated|pet', 'tame_animals'),
             (r'easiest.*train|most.*trainable|easy.*tame', 'most_trainable'),
@@ -145,6 +146,18 @@ class AnimalQueryHandler:
         animals = self.get_all_animals()
         return sorted(animals, key=lambda x: x["endangered"])
     
+    def delete_collection(self):
+        """Delete the entire animal collection"""
+        try:
+            client = self.get_client()
+            # Delete the collection
+            result = client.delete_collection(collection_name=self.collection_name)
+            print(f"Collection '{self.collection_name}' deleted successfully")
+            return True
+        except Exception as e:
+            print(f"Error deleting collection: {e}")
+            return False
+    
     def process_query(self, query):
         """Process the query and return appropriate response"""
         intent = self.parse_query(query)
@@ -204,6 +217,21 @@ class AnimalQueryHandler:
                 "animals": animals,
                 "message": f"Found {len(animals)} animals in the database."
             }
+        
+        elif intent == 'delete_collection':
+            success = self.delete_collection()
+            if success:
+                return {
+                    "intent": "Delete Collection",
+                    "animals": [],
+                    "message": f"Successfully deleted the '{self.collection_name}' collection. All animal data has been removed."
+                }
+            else:
+                return {
+                    "intent": "Delete Collection Failed",
+                    "animals": [],
+                    "message": f"Failed to delete the '{self.collection_name}' collection. Please check the logs for more details."
+                }
         
         else:
             # General search - return all animals
