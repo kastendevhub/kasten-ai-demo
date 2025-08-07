@@ -17,7 +17,7 @@ client.create_collection(
 
 # Fictional animal data with 4-dimensional vectors
 animal_data = [
-    {"id": 1, "creature": "dog", "is_wild" : "no", "vector": [0.9, 0.1]},
+    {"id": 1, "creature": "Dog", "is_wild" : "no", "vector": [0.9, 0.1]},
     {"id": 2, "creature": "Elephant", "is_wild" : "yes", "vector": [0.7, 0.8]},
     {"id": 3, "creature": "Eagle", "is_wild" : "yes", "vector": [0.7, 0.3]},
     {"id": 4, "creature": "Shark", "is_wild" : "yes", "vector": [0.1, 0.6]},

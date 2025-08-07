@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Knowledge Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .suggestions {
+            margin-bottom: 20px;
+        }
+
+        .suggestions h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .suggestion-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .suggestion-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: #667eea;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .bot-message {
+            background: #f0f0f0;
+            color: #333;
+            align-self: flex-start;
+        }
+
+        .animal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .animal-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .animal-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .animal-stats {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .stat-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .trainability-bar {
+            background: #4CAF50;
+        }
+
+        .endangered-bar {
+            background: #f44336;
+        }
+
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #queryInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #queryInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendBtn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        #sendBtn:hover {
+            background: #5a67d8;
+        }
+
+        #sendBtn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Animal Knowledge Chat</h1>
+            <p>Ask me about animals in natural language!</p>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="suggestions">
+                <h3>Try asking:</h3>
+                <div class="suggestion-buttons">
+                    <button class="suggestion-btn" onclick="askSuggestion('Which animals are wild?')">Which animals are wild?</button>
+                    <button class="suggestion-btn" onclick="askSuggestion('Which animal is easiest to train?')">Easiest to train?</button>
+                    <button class="suggestion-btn" onclick="askSuggestion('Which animals are most endangered?')">Most endangered?</button>
+                    <button class="suggestion-btn" onclick="askSuggestion('Show me all animals')">Show all animals</button>
+                    <button class="suggestion-btn" onclick="askSuggestion('Which animals are tame?')">Tame animals?</button>
+                </div>
+            </div>
+            <div class="loading" id="loading">Searching the database...</div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <input type="text" id="queryInput" placeholder="Ask about animals... (e.g., 'Which animals are wild?')" onkeypress="handleKeyPress(event)">
+                <button id="sendBtn" onclick="sendQuery()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function askSuggestion(query) {
+            document.getElementById('queryInput').value = query;
+            sendQuery();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendQuery();
+            }
+        }
+
+        function sendQuery() {
+            const query = document.getElementById('queryInput').value.trim();
+            if (!query) return;
+
+            // Show user message
+            addMessage(query, 'user');
+            
+            // Clear input
+            document.getElementById('queryInput').value = '';
+            
+            // Show loading
+            showLoading(true);
+            
+            // Disable send button
+            document.getElementById('sendBtn').disabled = true;
+
+            // Send query to backend
+            fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                document.getElementById('sendBtn').disabled = false;
+                
+                if (data.error) {
+                    addMessage(`Error: ${data.error}`, 'bot');
+                } else {
+                    addBotResponse(data);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                document.getElementById('sendBtn').disabled = false;
+                addMessage(`Error: ${error.message}`, 'bot');
+            });
+        }
+
+        function addMessage(message, sender) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = message;
+            chatArea.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addBotResponse(data) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message';
+            
+            let html = `<h4>${data.intent}</h4>`;
+            html += `<p>${data.message}</p>`;
+            
+            if (data.animals && data.animals.length > 0) {
+                html += '<div class="animal-grid">';
+                data.animals.forEach(animal => {
+                    const trainabilityPercent = Math.round(animal.trainability * 100);
+                    const endangeredPercent = Math.round(animal.endangered * 100);
+                    
+                    html += `
+                        <div class="animal-card">
+                            <div class="animal-name">${animal.creature}</div>
+                            <div class="animal-stats">
+                                ${animal.is_wild ? `<div><strong>Status:</strong> ${animal.is_wild === 'yes' ? 'Wild' : 'Domestic'}</div>` : ''}
+                                <div><strong>Trainability:</strong> ${trainabilityPercent}%</div>
+                                <div class="stat-bar">
+                                    <div class="stat-fill trainability-bar" style="width: ${trainabilityPercent}%"></div>
+                                </div>
+                                <div><strong>Endangered:</strong> ${endangeredPercent}%</div>
+                                <div class="stat-bar">
+                                    <div class="stat-fill endangered-bar" style="width: ${endangeredPercent}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            messageDiv.innerHTML = html;
+            chatArea.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'block' : 'none';
+            if (show) scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const chatArea = document.getElementById('chatArea');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Auto-focus input on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('queryInput').focus();
+        });
+    </script>
+</body>
+</html>

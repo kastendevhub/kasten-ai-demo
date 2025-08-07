@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: animal-chat-app
+  namespace: qdrant
+  labels:
+    app: animal-chat-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: animal-chat-app
+  template:
+    metadata:
+      labels:
+        app: animal-chat-app
+    spec:
+      imagePullSecrets:
+        - name: k10-ecr
+      containers:
+      - name: animal-chat-app
+        image: gcr.io/rich-access-174020/qdrant-demo:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        env:
+        - name: QDRANT_HOST
+          value: "qdrant"
+        - name: QDRANT_PORT
+          value: "6333"
+        - name: FLASK_ENV
+          value: "production"
+        - name: FLASK_DEBUG
+          value: "False"
+#        livenessProbe:
+#          httpGet:
+#            path: /health
+#            port: 5000
+#          initialDelaySeconds: 30
+#          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 15  # Increased from 5 to reduce connection frequency
+          timeoutSeconds: 5
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: animal-chat-service
+  namespace: qdrant
+  labels:
+    app: animal-chat-app
+spec:
+  selector:
+    app: animal-chat-app
+  ports:
+  - name: http
+    port: 80
+    targetPort: 5000
+    protocol: TCP
+  type: LoadBalancer
+#---
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: animal-chat-ingress
+#  namespace: qdrant
+#  annotations:
+#    nginx.ingress.kubernetes.io/rewrite-target: /
+#spec:
+#  rules:
+#  - host: animal-chat.local
+#    http:
+#      paths:
+#      - path: /animals
+#        pathType: Prefix
+#        backend:
+#          service:
+#            name: animal-chat-service
+#            port:
+#              number: 80

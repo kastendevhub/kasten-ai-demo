@@ -1,0 +1,16 @@
+
+services:
+  animal-chat-app:
+    image: gcr.io/rich-access-174020/qdrant-demo:latest
+    pull_policy: always
+    ports:
+      - "5000:5000"
+    environment:
+      - QDRANT_HOST=172.19.109.247
+      - QDRANT_PORT=6333
+      - FLASK_ENV=production
+      - FLASK_DEBUG=False
+    volumes:
+      - ./main.py:/app/main.py
+      - ./templates:/app/templates
+    # Now uses Flask server directly via CMD in Dockerfile

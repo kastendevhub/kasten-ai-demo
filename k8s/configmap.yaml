@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: animal-chat-config
+  namespace: qdrant
+data:
+  QDRANT_HOST: "qdrant"
+  QDRANT_PORT: "6333"
+  FLASK_ENV: "production"
