@@ -8,7 +8,7 @@ echo "🐾 Building Animal Chat Application..."
 
 # Build Docker image
 echo "📦 Building Docker image..."
-docker buildx build --platform=linux/arm64,linux/amd64 --pull --push -t gcr.io/rich-access-174020/qdrant-demo:latest .
+docker buildx build --platform=linux/arm64,linux/amd64 --pull --push -t ghcr.io/kastendevhub/animal-chat:latest .
 
 # Apply Kubernetes manifests
 echo "🚀 Deploying to Kubernetes..."

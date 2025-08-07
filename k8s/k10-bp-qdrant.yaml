@@ -1,51 +1,45 @@
-apiVersion: cr.kanister.io/v1alpha1
 kind: Blueprint
+apiVersion: cr.kanister.io/v1alpha1
 metadata:
-  name: mongo-hooks
+  name: qdrant-hooks
+  namespace: kasten-io
 actions:
-  backupPrehook:
-    phases:
-    - func: KubeExec
-      name: lockMongo
-      objects:
-        mongoDbSecret:
-          kind: Secret
-          name: '{{ index .Object.metadata.labels "app.kubernetes.io/instance" }}'
-          namespace: '{{ .Deployment.Namespace }}'
-      args:
-        namespace: "{{ .Deployment.Namespace }}"
-        pod: "{{ index .Deployment.Pods 0 }}"
-        container: mongodb
-        command:
-        - bash
-        - -o
-        - errexit
-        - -o
-        - pipefail
-        - -c
-        - |
-          export MONGODB_ROOT_PASSWORD='{{ index .Phases.lockMongo.Secrets.mongoDbSecret.Data "mongodb-root-password" | toString }}'
-          mongosh --authenticationDatabase admin -u root -p "${MONGODB_ROOT_PASSWORD}" --eval="db.fsyncLock()"
   backupPosthook:
+    name: ""
+    kind: ""
     phases:
-    - func: KubeExec
-      name: unlockMongo
-      objects:
-        mongoDbSecret:
-          kind: Secret
-          name: '{{ index .Object.metadata.labels "app.kubernetes.io/instance" }}'
-          namespace: '{{ .Deployment.Namespace }}'
-      args:
-        namespace: "{{ .Deployment.Namespace }}"
-        pod: "{{ index .Deployment.Pods 0 }}"
-        container: mongodb
-        command:
-        - bash
-        - -o
-        - errexit
-        - -o
-        - pipefail
-        - -c
-        - |
-          export MONGODB_ROOT_PASSWORD='{{ index .Phases.unlockMongo.Secrets.mongoDbSecret.Data "mongodb-root-password" | toString }}'
-          mongosh --authenticationDatabase admin -u root -p "${MONGODB_ROOT_PASSWORD}" --eval="db.fsyncUnlock()"
+      - func: KubeTask
+        name: unlockQdrant
+        args:
+          command:
+            - sh
+            - -c
+            - |
+              curl --location 'http://qdrant:6333/locks' \
+              --header 'Content-Type: application/json' \
+              --data '{
+                  "write": false
+              }'
+          image: curlimages/curl
+          namespace: "{{ .StatefulSet.Namespace }}"
+  backupPrehook:
+    name: ""
+    kind: ""
+    phases:
+      - func: KubeTask
+        name: lockQdrant
+        args:
+          command:
+            - sh
+            - -c
+            - >
+              curl --location 'http://qdrant:6333/locks' \
+
+              --header 'Content-Type: application/json' \
+
+              --data '{
+                  "error_message": "write is temporarily disabled while a Kasten backup is performed",
+                  "write": true
+              }'
+          image: curlimages/curl
+          namespace: "{{ .StatefulSet.Namespace }}"

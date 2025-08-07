@@ -45,7 +45,6 @@ class AnimalQueryHandler:
         
         # Query patterns and their corresponding handlers
         patterns = [
-            (r'delete.*all.*animals|drop.*database|delete.*collection|clear.*database', 'delete_collection'),
             (r'wild|untamed|feral', 'wild_animals'),
             (r'tame|domestic|domesticated|pet', 'tame_animals'),
             (r'easiest.*train|most.*trainable|easy.*tame', 'most_trainable'),
@@ -53,6 +52,7 @@ class AnimalQueryHandler:
             (r'most.*endangered|extinction|rare', 'most_endangered'),
             (r'least.*endangered|safe|common', 'least_endangered'),
             (r'all.*animals|list.*all|show.*all', 'all_animals'),
+            (r'delete.*all.*animals|drop.*database|delete.*collection|clear.*database', 'delete_collection'),
         ]
         
         for pattern, intent in patterns:
