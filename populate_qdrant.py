@@ -23,6 +23,8 @@ animal_data = [
     {"id": 4, "creature": "Shark", "is_wild" : "yes", "vector": [0.1, 0.6]},
     {"id": 5, "creature": "Kangaroo", "is_wild" : "yes", "vector": [0.3, 0.1]},
     {"id": 6, "creature": "Cat", "is_wild" : "no", "vector": [0.3, 0.1]},
+    {"id": 7, "creature": "Pachyderm", "is_wild" : "yes", "vector": [0.4, 0.8]},
+    {"id": 8, "creature": "Mastadon", "is_wild" : "yes", "vector": [0.2, 0.9]},
 ]
 
 # Convert animal data to Qdrant PointStruct format

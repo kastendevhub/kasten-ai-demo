@@ -1,0 +1,79 @@
+{{- if and .Values.qdrant.enabled .Values.qdrant.populateJob.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "k10animalai.fullname" . }}-populate-script
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "k10animalai.labels" . | nindent 4 }}
+data:
+  populate_qdrant.py: |
+    from qdrant_client import QdrantClient
+    from qdrant_client.http.models import VectorParams, Distance, PointStruct
+    import numpy as np
+    import time
+    import sys
+
+    def wait_for_qdrant(host, port, max_retries=30, retry_delay=5):
+        """Wait for Qdrant to be ready"""
+        for attempt in range(max_retries):
+            try:
+                client = QdrantClient(host=host, port=port)
+                # Try to get collections to test connectivity
+                client.get_collections()
+                print(f"Successfully connected to Qdrant at {host}:{port}")
+                return client
+            except Exception as e:
+                print(f"Attempt {attempt + 1}/{max_retries}: Could not connect to Qdrant: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                else:
+                    print("Failed to connect to Qdrant after all retries")
+                    sys.exit(1)
+
+    # Wait for Qdrant to be ready and connect
+    import os
+    qdrant_host = os.environ.get('QDRANT_HOST', 'qdrant')
+    qdrant_port = int(os.environ.get('QDRANT_PORT', '6333'))
+    client = wait_for_qdrant(host=qdrant_host, port=qdrant_port)
+
+    # Define the collection name
+    collection_name = "animal_collection"
+
+    # Check if collection already exists
+    collections = client.get_collections()
+    existing_collections = [col.name for col in collections.collections]
+    
+    if collection_name in existing_collections:
+        print(f"Collection '{collection_name}' already exists, skipping creation")
+    else:
+        # Create the collection with vectors stored on disk
+        client.create_collection(
+            collection_name=collection_name,
+            vectors_config=VectorParams(size=2, distance=Distance.COSINE, on_disk=True)
+        )
+        print(f"Created collection '{collection_name}'")
+
+    # Fictional animal data with 2-dimensional vectors
+    animal_data = [
+        {"id": 1, "creature": "Dog", "is_wild" : "no", "vector": [0.9, 0.1]},
+        {"id": 2, "creature": "Elephant", "is_wild" : "yes", "vector": [0.7, 0.8]},
+        {"id": 3, "creature": "Eagle", "is_wild" : "yes", "vector": [0.7, 0.3]},
+        {"id": 4, "creature": "Shark", "is_wild" : "yes", "vector": [0.1, 0.6]},
+        {"id": 5, "creature": "Kangaroo", "is_wild" : "yes", "vector": [0.3, 0.1]},
+        {"id": 6, "creature": "Cat", "is_wild" : "no", "vector": [0.3, 0.1]},
+        {"id": 7, "creature": "Pachyderm", "is_wild" : "yes", "vector": [0.4, 0.8]},
+        {"id": 8, "creature": "Mastadon", "is_wild" : "yes", "vector": [0.2, 0.9]},
+    ]
+
+    # Convert animal data to Qdrant PointStruct format
+    points = [
+        PointStruct(id=animal["id"], vector=np.array(animal["vector"]), payload={"creature": animal["creature"], "is_wild": animal["is_wild"]})
+        for animal in animal_data
+    ]
+
+    # Upload the points to the collection
+    client.upsert(collection_name=collection_name, points=points)
+
+    print(f"Successfully populated the '{collection_name}' collection with fictional animal data.")
+{{- end }}

@@ -13,6 +13,61 @@ A natural language chat web application that queries a Qdrant vector database to
 
 ## Quick Start
 
+Deploy the complete application (including Qdrant vector database) to your Kubernetes cluster using Helm:
+
+### Prerequisites
+- Kubernetes cluster (1.19+)
+- Helm 3.0+
+- kubectl configured for your cluster
+
+### Installation
+
+```bash
+# Add the helm repo locally
+helm repo add kasten-ai-demo https://veeamkasten.dev/helm/kasten-ai-demo/
+
+# Install with default options
+helm install my-demo kasten-ai-demo/k10animalai -n animalai \
+--create-namespace
+```
+
+### Kasten configuration
+A blueprint is available in k8s/ named k10-bp-qdrant.yaml.  Simply create the blueprint with this file
+in the `kasten-io` namespace:
+
+```bash
+kubectl create -f k8s/k10-bp-qdrant.yaml
+kubectl --namespace animalai annotate statefulset/my-demo-qdrant \
+    kanister.kasten.io/blueprint=qdrant-hooks
+```
+
+This will deploy:
+- 🗄️ Qdrant vector database (persistent storage)
+- 🤖 Animal chat web application
+- 📊 Automatic database population with sample animal data
+
+### Access the Application
+
+```bash
+# Get the external IP (for LoadBalancer service)
+kubectl get svc -n animalai
+
+# Or port-forward for local access
+kubectl port-forward -n animalai svc/my-animal-chat-k10animalai 8080:80
+```
+
+Visit `http://localhost:8080` (port-forward) or the external LoadBalancer IP to use the chat interface.
+
+### Cleanup
+
+```bash
+helm uninstall animal-chat
+```
+
+
+
+## Slow Start
+
 ### 1. Install Qdrant from helm
 
 ```bash

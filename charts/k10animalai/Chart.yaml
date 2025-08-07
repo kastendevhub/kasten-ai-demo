@@ -1,0 +1,17 @@
+apiVersion: v2
+version: 0.1.20
+appVersion: "0.1.20"
+name: k10animalai
+description: Kasten AI Demo App for Kubernetes
+home: https://github.com/kastendevhub/k10animalai
+icon: https://kastendevhub.github.io/k10animalai/icon.png
+sources:
+  - https://github.com/kastendevhub/k10animalai
+maintainers:
+  - name: Matt Slotten
+    url: https://veeamkasten.dev
+dependencies:
+- name: qdrant
+  version: 1.15.1
+  repository: https://charts.bitnami.com/bitnami
+  condition: qdrant.enabled

@@ -1,0 +1,13 @@
+{{- if .Values.configMap.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "k10animalai.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "k10animalai.labels" . | nindent 4 }}
+data:
+  QDRANT_HOST: {{ .Values.qdrant.host | default "qdrant" | quote }}
+  QDRANT_PORT: {{ .Values.qdrant.port | default "6333" | quote }}
+  FLASK_ENV: {{ .Values.flask.env | default "production" | quote }}
+{{- end }}

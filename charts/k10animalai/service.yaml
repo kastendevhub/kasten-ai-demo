@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "k10animalai.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "k10animalai.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 5000
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "k10animalai.selectorLabels" . | nindent 4 }}

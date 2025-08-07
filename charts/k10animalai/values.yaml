@@ -1,0 +1,110 @@
+# Default values for k10animalai.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+k10animalai:
+  replicaCount: 1
+  image:
+    registry: ghcr.io
+    repository: kastendevhub
+    image: animal-chat
+    tag: latest
+    pullPolicy: Always
+
+qdrant:
+  enabled: true
+  host: "qdrant"  # Used when qdrant.enabled is false, otherwise auto-generated
+  port: "6333"
+  # Configuration for the populate job
+  populateJob:
+    enabled: true
+  # Subchart configuration for Bitnami Qdrant
+  auth:
+    enabled: false
+  persistence:
+    enabled: true
+    size: 8Gi
+  resources:
+    limits:
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# Flask configuration
+flask:
+  env: "production"
+  debug: "False"
+
+# ConfigMap configuration
+configMap:
+  create: false
+
+# Image pull secrets
+imagePullSecrets: []
+  # - name: k10-ecr
+
+# Probes configuration
+livenessProbe:
+  enabled: false
+  path: "/health"
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  enabled: true
+  path: "/health"
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+## Service configuration.
+service:
+  type: LoadBalancer
+  port: 80
+
+## Ingress configuration.
+ingress:
+  create: false
+  class: ""
+  host: ""
+  path: ""
+  pathType: ""
+  annotations: {}
+  tls:
+    enabled: false
+
+## Red Hat OpenShift Route configuration.
+route:
+  create: false
+  host: ""
+  path: ""
+  annotations: {}
+    # kubernetes.io/tls-acme: "true"
+    # haproxy.router.openshift.io/disable_cookies: "true"
+    # haproxy.router.openshift.io/balance: roundrobin
+  labels: {}
+    # key: value
+  tls:
+    enabled: false
+    insecureEdgeTerminationPolicy: "Redirect" # What to do in case of an insecure traffic edge termination
+    termination: "edge" # Where this TLS configuration should terminate
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
