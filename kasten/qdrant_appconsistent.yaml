@@ -15,7 +15,7 @@ actions:
         - sh
         - -c
         - |
-          curl --location 'http://qdrant:6333/locks' \
+          curl --location 'http://my-demo-qdrant:6333/locks' \
           --header 'Content-Type: application/json' \
           --data '{
               "error_message": "write is temporarily disabled while a Kasten backup is performed",
@@ -32,7 +32,7 @@ actions:
         - sh
         - -c
         - |
-          curl --location 'http://qdrant:6333/locks' \
+          curl --location 'http://my-demo-qdrant:6333/locks' \
           --header 'Content-Type: application/json' \
           --data '{
               "write": false
